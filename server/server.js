@@ -1,6 +1,8 @@
 require("dotenv").config();
 const { MongoClient } = require("mongodb");
 const client = new MongoClient(process.env.MONGO_URI);
+const db = client.db("ICS418Y-PA2");
+const accounts = db.collection("accounts");
 
 const express = require("express");
 const cors = require("cors");
@@ -29,5 +31,47 @@ async function connectDatabase() {
         console.error(error);
     }
 }
-
 connectDatabase();
+
+app.post("/signup", async (req, res) => {
+    const f_name = req.body.f_name;
+    const l_name = req.body.l_name;
+    const username = req.body.username;
+    const password = req.body.password;
+
+    if(f_name === "" || l_name === "" || username === "" || password === "") {
+        res.status(400).json({
+            message: "one or more fields is empty"
+        })
+    }
+    else {
+        try {
+            const existingAccount = await accounts.findOne({
+                username: username
+            });
+
+            if(existingAccount === null) {
+                const account = {
+                    f_name: f_name,
+                    l_name: l_name,
+                    username: username,
+                    password: password
+                };
+                await accounts.insertOne(account);
+
+                res.status(201).json({
+                    message: "account created"
+                });
+            }
+            else {
+                res.status(409).json({
+                    message: "account with that username already exists"
+                });
+            }
+        } catch (error) {
+            res.status(500).json({
+                message: "Server Error"
+            });
+        }
+    }
+});
