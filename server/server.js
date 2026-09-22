@@ -65,10 +65,59 @@ app.post("/signup", async (req, res) => {
             }
             else {
                 res.status(409).json({
-                    message: "account with that username already exists"
+                    message: "An account with that username already exists"
                 });
             }
         } catch (error) {
+            console.error(error);
+
+            res.status(500).json({
+                message: "Server Error"
+            });
+        }
+    }
+});
+
+app.post("/login", async (req, res) => {
+    const username = req.body.username;
+    const password = req.body.password;
+
+    if(username === "" || password === "") {
+        res.status(400).json({
+            message: "username or password is empty"
+        })
+    }
+    else {
+        try {
+            const existingUsername = await accounts.findOne({
+                username: username
+            });
+
+            if(existingUsername === null) {
+                res.status(401).json({
+                    message: "An account with associated username does not exist"
+                });
+            }
+            else {
+                const existingAccount = await accounts.findOne({
+                    username: username,
+                    password: password
+                })
+                
+                if(existingAccount === null) {
+                    res.status(401).json({
+                        message: "password is incorrect"
+                    });
+                }
+                else {
+                    res.status(200).json({
+                        message: "Login successful"
+                    });
+                }
+            }
+        } catch (error) {
+            console.error(error);
+
             res.status(500).json({
                 message: "Server Error"
             });

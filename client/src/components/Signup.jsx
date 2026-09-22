@@ -30,12 +30,8 @@ function Signup() {
         
         const data = await credentials.json();
         
-        if(credentials.ok) {
-            setMessage("credentials accepted");
-        }
-        else {
-            setMessage(data.message);
-        }
+        setMessage(data.message);
+        
     } catch (error) {
         setMessage("Could not reach server");
     }
